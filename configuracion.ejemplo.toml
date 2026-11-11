@@ -1,0 +1,4 @@
+# Copie este archivo como configuracion.toml (no se sube al repositorio) y ajuste la ruta.
+# También puede definir la variable de entorno DESIERTOS_BANCO.
+[rutas]
+banco = "F:/Biblioteca"

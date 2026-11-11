@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Desiertos financieros de la Región Metropolitana</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: cabecera con cifras, mapa de celdas con capas, curva de cobertura y tabla comunal. */
+:root{
+  --fondo:#f4f5f2; --papel:#ffffff; --tinta:#1d2421; --suave:#5d6a64; --linea:#d9ddd8;
+  --acento:#0f6b5c; --alerta:#b4442c;
+  --f-titulo:"Newsreader", Georgia, "Times New Roman", serif;
+  --f-texto:"Public Sans", "Segoe UI", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --fondo:#141816; --papel:#1c211f; --tinta:#e7ebe8; --suave:#9aa6a0; --linea:#2f3633;
+  --acento:#4fb8a3; --alerta:#e07a5f; color-scheme: dark; } }
+:root[data-theme="dark"]{
+  --fondo:#141816; --papel:#1c211f; --tinta:#e7ebe8; --suave:#9aa6a0; --linea:#2f3633;
+  --acento:#4fb8a3; --alerta:#e07a5f; color-scheme: dark; }
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--fondo);color:var(--tinta);font:15px/1.5 var(--f-texto)}
+.envoltura{max-width:1240px;margin:0 auto;padding:24px 20px 48px;display:grid;gap:22px}
+h1,h2{font-family:var(--f-titulo);font-weight:600;text-wrap:balance;margin:0}
+h1{font-size:clamp(26px,3.4vw,38px);line-height:1.15}
+h2{font-size:22px}
+.bajada{color:var(--suave);max-width:70ch;margin:6px 0 0}
+.etiqueta{display:inline-block;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--acento);font-weight:600}
+.cifras{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.cifra{background:var(--papel);border:1px solid var(--linea);border-radius:8px;padding:14px 16px}
+.cifra b{display:block;font-family:var(--f-titulo);font-size:30px;font-variant-numeric:tabular-nums;line-height:1.1}
+.cifra span{color:var(--suave);font-size:13px}
+.panel{background:var(--papel);border:1px solid var(--linea);border-radius:8px;padding:16px}
+.mapa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px}
+@media (max-width:860px){.mapa-grid{grid-template-columns:1fr}}
+.controles{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.controles button{font:inherit;font-size:13px;border:1px solid var(--linea);background:var(--fondo);color:var(--tinta);border-radius:999px;padding:5px 12px;cursor:pointer}
+.controles button[aria-pressed="true"]{background:var(--acento);border-color:var(--acento);color:#fff}
+.controles button:focus-visible,select:focus-visible,th button:focus-visible{outline:2px solid var(--acento);outline-offset:2px}
+#lienzo-caja{position:relative;width:100%;aspect-ratio:1/1;max-height:640px;border:1px solid var(--linea);border-radius:6px;overflow:hidden;background:var(--fondo);touch-action:none}
+#lienzo{width:100%;height:100%;display:block;cursor:grab}
+#tip{position:absolute;pointer-events:none;background:var(--papel);border:1px solid var(--linea);border-radius:6px;padding:8px 10px;font-size:13px;max-width:240px;box-shadow:0 4px 14px rgba(0,0,0,.15);display:none}
+.leyenda{display:grid;gap:4px;font-size:13px;margin-top:8px}
+.leyenda div{display:flex;align-items:center;gap:8px}
+.leyenda i{width:16px;height:12px;border-radius:2px;display:inline-block;border:1px solid var(--linea)}
+.leyenda i.linea{height:0;border:0;border-top:2px solid;border-radius:0}
+.ref{display:flex;align-items:center;gap:6px;font-size:13px;margin:0 0 10px;color:var(--suave);cursor:pointer}
+.ref input{accent-color:var(--acento)}
+.lateral{display:grid;gap:14px;align-content:start}
+.lateral p{margin:0;font-size:14px}
+label{font-size:13px;color:var(--suave)}
+select{font:inherit;font-size:14px;padding:4px 8px;border:1px solid var(--linea);border-radius:6px;background:var(--fondo);color:var(--tinta)}
+#curva{width:100%;height:auto;display:block}
+.tabla-caja{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+th,td{padding:6px 8px;border-bottom:1px solid var(--linea);text-align:right;white-space:nowrap}
+th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
+th button{font:inherit;font-weight:600;background:none;border:0;color:var(--tinta);cursor:pointer;padding:0}
+.chip{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--linea)}
+.chip.p1{background:color-mix(in srgb,var(--alerta) 18%,transparent)}
+.chip.p2{background:color-mix(in srgb,var(--acento) 16%,transparent)}
+.hip{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.hip div{border-left:4px solid var(--acento);padding:4px 12px}
+.hip div.no{border-left-color:var(--alerta)}
+.hip b{font-variant-numeric:tabular-nums}
+.notas{font-size:13px;color:var(--suave);display:grid;gap:6px;max-width:90ch}
+.notas p{margin:0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="envoltura">
+  <header>
+    <span class="etiqueta">Estudio con protocolo sellado · Censo 2024 · noviembre 2026</span>
+    <h1>Desiertos financieros de la Región Metropolitana</h1>
+    <p class="bajada">Tiempo a pie desde cada celda hexagonal poblada hasta el punto de acceso financiero físico más cercano: sucursal, cajero, Caja Vecina o BancoEstado Express. Una celda es desierto si el punto más cercano está a más de <span class="umbral"></span> minutos caminando a 3,6 km/h.</p>
+  </header>
+
+  <section class="cifras" aria-label="Cifras principales">
+    <div class="cifra"><b id="c-pct"></b><span>de la población vive en desierto</span></div>
+    <div class="cifra"><b id="c-des"></b><span>personas a más de <span class="umbral"></span> minutos a pie</span></div>
+    <div class="cifra"><b id="c-rur"></b><span>de la población rural en desierto, frente a <span id="c-urb"></span> urbana</span></div>
+    <div class="cifra"><b id="c-100"></b><span>quedaría en desierto con 100 puntos nuevos bien ubicados</span></div>
+  </section>
+
+  <section class="panel" aria-labelledby="t-mapa">
+    <h2 id="t-mapa">Mapa de celdas</h2>
+    <div class="mapa-grid" style="margin-top:10px">
+      <div>
+        <div class="controles" role="group" aria-label="Capa del mapa">
+          <button id="b-tiempo" data-capa="tiempo" aria-pressed="true">Tiempo a pie</button>
+          <button id="b-desierto" data-capa="desierto" aria-pressed="false">Desierto (<span class="umbral"></span> min)</button>
+          <button id="b-gi" data-capa="gi" aria-pressed="false">Focos Gi*</button>
+          <button id="b-lisa" data-capa="lisa" aria-pressed="false">LISA</button>
+        </div>
+        <label class="ref"><input type="checkbox" id="ref" checked> Nombres de comunas, ríos y autopistas</label>
+        <div id="lienzo-caja"><canvas id="lienzo" aria-label="Mapa de celdas hexagonales de la Región Metropolitana"></canvas><div id="tip" role="status"></div></div>
+        <p style="font-size:12px;color:var(--suave);margin:6px 0 0">Arrastra para mover y usa la rueda o dos dedos para acercar. Sin límites comunales dibujados: cada nombre va en el centro poblado de su comuna. Ríos y autopistas: © colaboradores de OpenStreetMap. Celdas H3 de resolución 9 con <span class="minimo"></span> o más personas; las de menos se agregan a resolución 6 (hexágonos grandes) y se ocultan si el agregado no llega a <span class="minimo"></span>.</p>
+      </div>
+      <div class="lateral">
+        <div id="leyenda" class="leyenda" aria-live="polite"></div>
+        <div>
+          <label for="sel-k">Escenario de puntos nuevos (MCLP)</label><br>
+          <select id="sel-k"><option value="0">Ninguno</option></select>
+        </div>
+        <p id="texto-k"></p>
+        <svg id="curva" viewBox="0 0 300 180" role="img" aria-label="Curva de cobertura: población de la región en desierto según el número de puntos nuevos"></svg>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="t-hip">
+    <h2 id="t-hip">Hipótesis confirmatorias</h2>
+    <div class="hip" style="margin-top:10px">
+      <div id="hip-H1"><b>H1 <span class="veredicto"></span></b> La proporción en desierto es <b id="h1"></b> puntos porcentuales mayor en celdas rurales que en urbanas (IC 95 % <span id="h1ic"></span>; p de Holm <span class="p-holm"></span>).</div>
+      <div id="hip-H2"><b>H2 <span class="veredicto"></span></b> Las personas de 60 años y más están <span id="h2dir"></span> en los desiertos: razón <b id="h2"></b> (IC 95 % <span id="h2ic"></span>; p de Holm <span class="p-holm"></span>).</div>
+      <div id="hip-H3"><b>H3 <span class="veredicto"></span></b> El tiempo a pie se agrupa en el espacio: I de Moran <b id="h3"></b> (p de Holm <span class="p-holm"></span>).</div>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="t-com">
+    <h2 id="t-com">Comunas</h2>
+    <p class="bajada" style="margin-bottom:10px">Desierto y tiempo agregados desde las celdas. Sucursales y cajeros por 10.000 habitantes según la CMF (agosto 2026); pobreza por ingresos y multidimensional según las estimaciones SAE 2024 del Ministerio de Desarrollo Social. Las cifras comunales no se atribuyen a celdas.</p>
+    <div class="tabla-caja"><table id="tabla"><thead><tr></tr></thead><tbody></tbody></table></div>
+  </section>
+
+  <section class="notas" aria-labelledby="t-notas">
+    <h2 id="t-notas" style="color:var(--tinta);font-size:18px">Método, límites y fuentes</h2>
+    <p>Red y tiempos: R5 (r5py) sobre OpenStreetMap, extracto del 2026-11-08; la red respeta el acceso privado declarado en OSM, por eso algunas celdas de condominios y parcelas quedan sin ruta (límite declarado). Tope de <span id="tope"></span> minutos.</p>
+    <p>Puntos: red de atención de BancoEstado (Caja Vecina, sucursales y Express), localizadores públicos de BCI, Banco Falabella y Scotiabank, y OpenStreetMap para los demás bancos. Banco de Chile, Santander e Itaú bloquean la descarga automática y se cubren solo con OpenStreetMap, que los subrepresenta, de modo que el indicador es una cota superior de los desiertos. La lista de puntos no se publica.</p>
+    <p>Población: Censo de Población y Vivienda 2024 (INE), por manzana y entidad, llevada a celdas por área. Hipótesis con bootstrap por bloques (<span id="replicas"></span> réplicas) y corrección de Holm. Localización, focos y perfiles son exploratorios.</p>
+    <p>Fuentes y licencias: © colaboradores de OpenStreetMap, ODbL. INE, Censo 2024, CC BY-SA 4.0. CMF, sistema BEST. Ministerio de Desarrollo Social y Familia, estimaciones SAE 2024. Elaboración: Camilo López Barra, geógrafo.</p>
+  </section>
+</div>
+
+<script src="vendor/d3.min.js"></script>
+<script src="vendor/h3-js.umd.js"></script>
+<script>
+const DATOS = __DATOS__;
+const fmt = new Intl.NumberFormat("es-CL");
+const fmt1 = new Intl.NumberFormat("es-CL",{minimumFractionDigits:1,maximumFractionDigits:1});
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+// Cifras
+const R = DATOS.resumen;
+document.getElementById("c-pct").textContent = fmt1.format(R.pct) + " %";
+document.getElementById("c-des").textContent = fmt.format(R.des);
+document.getElementById("c-rur").textContent = fmt1.format(R.rural) + " %";
+document.getElementById("c-urb").textContent = fmt1.format(R.urbano) + " %";
+const c100 = DATOS.curva.find(c => c[0] === 100);
+document.getElementById("c-100").textContent = fmt1.format(c100[2]) + " %";
+document.getElementById("h1").textContent = fmt1.format(R.h1[0]);
+document.getElementById("h1ic").textContent = fmt1.format(R.h1[1]) + " a " + fmt1.format(R.h1[2]);
+document.getElementById("h2").textContent = R.h2[0].toFixed(2).replace(".", ",");
+document.getElementById("h2ic").textContent = R.h2[1].toFixed(2).replace(".", ",") + " a " + R.h2[2].toFixed(2).replace(".", ",");
+document.getElementById("h3").textContent = R.h3.toFixed(3).replace(".", ",");
+for (const el of document.querySelectorAll(".umbral")) el.textContent = fmt.format(R.umbral_min);
+for (const el of document.querySelectorAll(".minimo")) el.textContent = fmt.format(R.min_personas);
+document.getElementById("tope").textContent = fmt.format(R.tope_min);
+document.getElementById("replicas").textContent = fmt.format(R.replicas);
+document.getElementById("h2dir").textContent = R.h2[0] < 1 ? "subrepresentadas" : "sobrerrepresentadas";
+for (const h of ["H1", "H2", "H3"]){
+  const caja = document.getElementById("hip-" + h);
+  caja.classList.toggle("no", !R.sostiene[h]);
+  caja.querySelector(".veredicto").textContent = R.sostiene[h] ? "se sostiene." : "no se sostiene.";
+  const p = R.p_holm[h];
+  caja.querySelector(".p-holm").textContent = p < 0.001 ? "< 0,001" : "= " + p.toFixed(3).replace(".", ",");
+}
+
+// Proyección equirectangular local
+const LAT0 = -33.5, COS0 = Math.cos(LAT0 * Math.PI / 180);
+const proy = (lat, lng) => [(lng + 70.7) * COS0, -(lat - LAT0)];
+const poli = id => h3.cellToBoundary(id).map(([la, ln]) => proy(la, ln));
+const celdas9 = DATOS.r9.map(d => ({id:d[0], pob:d[1], min:d[2], cens:d[3], gi:d[4], lisa:d[5], des:d[6], p:poli(d[0])}));
+const celdas6 = DATOS.r6.map(d => ({id:d[0], pob:d[1], pdes:d[2], min:d[3], p:poli(d[0])}));
+const indice9 = new Map(celdas9.map(c => [c.id, c]));
+const nombreComuna = new Map(DATOS.comunas.map(c => [c.cut, c.comuna]));
+const celdas9cut = new Map(DATOS.r9.map(d => [d[0], d[7]]));
+const lineas = DATOS.referencias.map(l => ({t:l.t, c:l.c.map(tr => tr.map(([ln, la]) => proy(la, ln)))}));
+const rotulos = [...DATOS.comunas].sort((a, b) => b.pob - a.pob).map(c => ({n:c.comuna, p:proy(c.lat, c.lon)}));
+let verRef = true;
+// Referencias para orientarse: ríos, autopistas y nombres (sin límites, regla E-8)
+function oscuro(){ return css("--fondo").toLowerCase() === "#141816"; }
+function dibujarLineas(){
+  ctx.save(); ctx.lineCap = "round"; ctx.lineJoin = "round";
+  for (const l of lineas){
+    const rio = l.t === "rio";
+    ctx.strokeStyle = rio ? (oscuro() ? "rgba(120,170,220,.85)" : "rgba(40,100,170,.75)")
+                          : (oscuro() ? "rgba(235,235,235,.55)" : "rgba(40,40,40,.5)");
+    ctx.lineWidth = (rio ? 1.6 : 1.1) * Math.min(2, Math.max(1, Math.sqrt(transform.k)));
+    for (const tr of l.c){
+      ctx.beginPath();
+      tr.forEach((q, i) => { const [a, b] = aPantalla(q); i ? ctx.lineTo(a, b) : ctx.moveTo(a, b); });
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+function dibujarRotulos(){
+  const ocupado = [];
+  ctx.save();
+  ctx.font = "600 11.5px Inter, system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.lineJoin = "round"; ctx.lineWidth = 3.5;
+  ctx.strokeStyle = css("--papel"); ctx.fillStyle = css("--tinta");
+  for (const r of rotulos){
+    const [x, y] = aPantalla(r.p);
+    const w = ctx.measureText(r.n).width + 6, h = 15;
+    const caja = [x - w / 2, y - h / 2, x + w / 2, y + h / 2];
+    if (caja[0] < 2 || caja[1] < 2 || caja[2] > W - 2 || caja[3] > H - 2) continue;
+    if (ocupado.some(o => caja[0] < o[2] && caja[2] > o[0] && caja[1] < o[3] && caja[3] > o[1])) continue;
+    ocupado.push(caja);
+    ctx.strokeText(r.n, x, y); ctx.fillText(r.n, x, y);
+  }
+  ctx.restore();
+}
+document.getElementById("ref").addEventListener("change", e => { verRef = e.target.checked; leyenda(); dibujar(); });
+
+const indice6 = new Map(celdas6.map(c => [c.id, c]));
+let xs = [], ys = [];
+for (const c of celdas6.concat(celdas9)) for (const [x, y] of c.p) { xs.push(x); ys.push(y); }
+const ext = {x0:d3.min(xs), x1:d3.max(xs), y0:d3.min(ys), y1:d3.max(ys)};
+
+const U = R.umbral_min, TOPE = R.tope_min;
+const TIEMPO = [[5,"#1a7a64"],[10,"#63a77a"],[U,"#c9cf8a"],[30,"#e9a35e"],[60,"#d1603d"],[TOPE,"#8e2c3b"],[Infinity,"#4a1c2b"]];
+const colorTiempo = m => TIEMPO.find(t => m <= t[0])[1];
+const etiquetasTiempo = ["Hasta 5 min","5 a 10 min",`10 a ${U} min`,`${U} a 30 min`,"30 a 60 min",`60 a ${TOPE} min`,`Sin ruta en ${TOPE} min`];
+const CAPAS = {
+  tiempo: {color: c => c.cens ? TIEMPO[6][1] : colorTiempo(c.min), color6: c => colorTiempo(c.min),
+           leyenda: TIEMPO.map((t, i) => [t[1], etiquetasTiempo[i]])},
+  desierto: {color: c => c.des ? "#c4472f" : "#7fb3a6",
+             color6: c => d3.interpolateRgb("#7fb3a6", "#c4472f")(c.pdes),
+             leyenda: [["#c4472f",`Desierto: más de ${U} min`],["#7fb3a6",`${U} min o menos`],["linear","Agregados r6: color según % en desierto"]]},
+  gi: {color: c => c.gi === 1 ? "#c4472f" : c.gi === -1 ? "#3c6e9f" : "#b9bdb6", color6: () => "#b9bdb6",
+       leyenda: [["#c4472f","Foco caliente (tiempos altos)"],["#3c6e9f","Foco frío (tiempos bajos)"],["#b9bdb6","Sin foco (BH, q = 0,05)"]]},
+  lisa: {color: c => ({1:"#c4472f",2:"#3c6e9f",3:"#e9a35e",4:"#8fb3d4"})[c.lisa] || "#b9bdb6", color6: () => "#b9bdb6",
+         leyenda: [["#c4472f","Alto-alto"],["#3c6e9f","Bajo-bajo"],["#e9a35e","Alto-bajo"],["#8fb3d4","Bajo-alto"],["#b9bdb6","No significativo (p ≥ 0,05)"]]},
+};
+let capa = "tiempo", kSel = 0, transform = d3.zoomIdentity;
+
+const canvas = document.getElementById("lienzo"), ctx = canvas.getContext("2d");
+const caja = document.getElementById("lienzo-caja");
+let escala = 1, ox = 0, oy = 0, W = 0, H = 0;
+function ajustar(){
+  const r = caja.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  W = r.width; H = r.height; canvas.width = W * dpr; canvas.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  escala = 0.94 * Math.min(W / (ext.x1 - ext.x0), H / (ext.y1 - ext.y0));
+  ox = (W - escala * (ext.x1 - ext.x0)) / 2 - escala * ext.x0;
+  oy = (H - escala * (ext.y1 - ext.y0)) / 2 - escala * ext.y0;
+  dibujar();
+}
+const aPantalla = ([x, y]) => transform.apply([ox + escala * x, oy + escala * y]);
+function trazo(p){ ctx.beginPath(); p.forEach((q, i) => { const [a, b] = aPantalla(q); i ? ctx.lineTo(a, b) : ctx.moveTo(a, b); }); ctx.closePath(); }
+function dibujar(){
+  ctx.clearRect(0, 0, W, H);
+  const C = CAPAS[capa];
+  for (const c of celdas6){
+    trazo(c.p);
+    if (c.pob === null){ ctx.fillStyle = "rgba(150,150,150,.18)"; ctx.fill(); }
+    else { ctx.globalAlpha = 0.55; ctx.fillStyle = C.color6(c); ctx.fill(); ctx.globalAlpha = 1; }
+    ctx.strokeStyle = "rgba(120,120,120,.35)"; ctx.lineWidth = 0.6; ctx.stroke();
+  }
+  for (const c of celdas9){ trazo(c.p); ctx.fillStyle = C.color(c); ctx.fill(); }
+  if (verRef) dibujarLineas();
+  if (kSel > 0){
+    const r = Math.max(3, Math.min(7, 3 * transform.k));
+    ctx.lineWidth = 1.5; ctx.strokeStyle = "#ffffff"; ctx.fillStyle = "#1d2421";
+    for (const id of DATOS.sitios[kSel]){
+      const [la, ln] = h3.cellToLatLng(id); const [a, b] = aPantalla(proy(la, ln));
+      ctx.beginPath(); ctx.arc(a, b, r, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+    }
+  }
+  if (verRef) dibujarRotulos();
+}
+d3.select(canvas).call(d3.zoom().scaleExtent([1, 40]).on("zoom", e => { transform = e.transform; dibujar(); }));
+new ResizeObserver(ajustar).observe(caja);
+
+// Tooltip
+const tip = document.getElementById("tip");
+canvas.addEventListener("pointermove", e => {
+  const r = canvas.getBoundingClientRect();
+  const [sx, sy] = transform.invert([e.clientX - r.left, e.clientY - r.top]);
+  const x = (sx - ox) / escala, y = (sy - oy) / escala;
+  const lat = -y + LAT0, lng = x / COS0 - 70.7;
+  const c9 = indice9.get(h3.latLngToCell(lat, lng, 9));
+  const c6 = indice6.get(h3.latLngToCell(lat, lng, 6));
+  let html = null;
+  if (c9){
+    const t = c9.cens ? `sin ruta a pie en ${TOPE} min` : c9.min + " min a pie";
+    html = `<b>${nombreComuna.get(celdas9cut.get(c9.id)) ?? ""}</b><br>${fmt.format(c9.pob)} personas · ${t}` + (c9.gi === 1 ? "<br>Foco caliente" : "");
+  } else if (c6 && c6.pob !== null){
+    html = `<b>Agregado de celdas pequeñas</b><br>${fmt.format(c6.pob)} personas<br>${fmt1.format(c6.pdes * 100)} % en desierto · ${c6.min} min medios`;
+  } else if (c6){ html = `Agregado de menos de ${R.min_personas} personas: oculto`; }
+  if (!html){ tip.style.display = "none"; return; }
+  tip.innerHTML = html; tip.style.display = "block";
+  const px = Math.min(e.clientX - r.left + 12, W - 250), py = Math.min(e.clientY - r.top + 12, H - 80);
+  tip.style.left = px + "px"; tip.style.top = py + "px";
+});
+canvas.addEventListener("pointerleave", () => { tip.style.display = "none"; });
+
+// Leyenda y capas
+function leyenda(){
+  const L = document.getElementById("leyenda"); L.replaceChildren();
+  for (const [col, txt] of CAPAS[capa].leyenda){
+    const d = document.createElement("div"), i = document.createElement("i");
+    i.style.background = col === "linear" ? "linear-gradient(90deg,#7fb3a6,#c4472f)" : col;
+    d.append(i, document.createTextNode(txt)); L.append(d);
+  }
+  if (verRef){
+    for (const [col, txt] of [[oscuro() ? "rgba(120,170,220,.85)" : "rgba(40,100,170,.75)", "Río"],
+                              [oscuro() ? "rgba(235,235,235,.55)" : "rgba(40,40,40,.5)", "Autopista"]]){
+      const d = document.createElement("div"), i = document.createElement("i");
+      i.className = "linea"; i.style.borderTopColor = col;
+      d.append(i, document.createTextNode(txt)); L.append(d);
+    }
+  }
+}
+document.querySelectorAll(".controles button").forEach(b => b.addEventListener("click", () => {
+  capa = b.dataset.capa;
+  document.querySelectorAll(".controles button").forEach(o => o.setAttribute("aria-pressed", String(o === b)));
+  leyenda(); dibujar();
+}));
+leyenda();
+
+// Escenarios y curva
+const sel = document.getElementById("sel-k");
+for (const [k] of DATOS.curva) if (k >= 10){ const o = document.createElement("option"); o.value = k; o.textContent = k + " puntos nuevos"; sel.append(o); }
+function textoK(){
+  const p = document.getElementById("texto-k");
+  if (!kSel){ p.textContent = `Elige un escenario para ver dónde rinde más un punto nuevo: el modelo de cobertura máxima maximiza la población que queda a ${U} minutos o menos.`; return; }
+  const c = DATOS.curva.find(x => x[0] === kSel);
+  p.textContent = `Con ${kSel} puntos nuevos quedan cubiertas ${fmt.format(c[1])} personas y la población regional en desierto baja de ${fmt1.format(R.pct)} % a ${fmt1.format(c[2])} %. Ubicación aproximada, al hexágono de resolución 8.`;
+}
+sel.addEventListener("change", () => { kSel = +sel.value; textoK(); dibujar(); curva(); });
+textoK();
+function curva(){
+  const svg = d3.select("#curva"); svg.selectAll("*").remove();
+  const m = {l:36, r:10, t:10, b:30}, w = 300, h = 180;
+  const datos = [[0, 0, R.pct]].concat(DATOS.curva);
+  const x = d3.scaleLinear().domain([0, 400]).range([m.l, w - m.r]);
+  const y = d3.scaleLinear().domain([0, 6]).range([h - m.b, m.t]);
+  const tinta = css("--suave"), linea = css("--linea"), acento = css("--acento");
+  svg.append("g").attr("transform", `translate(0,${h - m.b})`).call(d3.axisBottom(x).ticks(4).tickSize(3))
+     .call(g => g.selectAll("text").attr("fill", tinta)).call(g => g.selectAll("path,line").attr("stroke", linea));
+  svg.append("g").attr("transform", `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(3).tickFormat(d => d + " %").tickSize(-(w - m.l - m.r)))
+     .call(g => g.selectAll("text").attr("fill", tinta)).call(g => g.selectAll("line").attr("stroke", linea).attr("stroke-opacity", .6)).call(g => g.select("path").remove());
+  svg.append("path").datum(datos).attr("fill", "none").attr("stroke", acento).attr("stroke-width", 2).attr("d", d3.line().x(d => x(d[0])).y(d => y(d[2])));
+  svg.selectAll("circle").data(datos).join("circle").attr("cx", d => x(d[0])).attr("cy", d => y(d[2]))
+     .attr("r", d => d[0] === kSel ? 5 : 2.5).attr("fill", d => d[0] === kSel ? css("--alerta") : acento);
+  svg.append("text").attr("x", w - m.r).attr("y", h - 4).attr("text-anchor", "end").attr("fill", tinta).attr("font-size", 10).text("puntos nuevos");
+}
+curva();
+
+// Tabla comunal
+const COLS = [["comuna","Comuna"],["perfil","Perfil"],["pob","Población"],["des","% desierto"],["min","Min. medios"],["rural","% rural"],
+  ["pts","Puntos /10 mil"],["cv","Caja Vecina /10 mil"],["suc","Sucursales /10 mil"],["caj","Cajeros /10 mil"],["ing","% pobreza ingresos"],["mul","% pobreza multidim."]];
+let orden = ["des", -1];
+const thead = document.querySelector("#tabla thead tr"), tbody = document.querySelector("#tabla tbody");
+for (const [k, t] of COLS){
+  const th = document.createElement("th"), b = document.createElement("button");
+  b.textContent = t; b.addEventListener("click", () => { orden = [k, orden[0] === k ? -orden[1] : -1]; tabla(); });
+  th.append(b); thead.append(th);
+}
+function tabla(){
+  const [k, s] = orden;
+  const filas = DATOS.comunas.slice().sort((a, b) => (a[k] > b[k] ? 1 : a[k] < b[k] ? -1 : 0) * s);
+  tbody.replaceChildren();
+  for (const f of filas){
+    const tr = document.createElement("tr");
+    for (const [c] of COLS){
+      const td = document.createElement("td");
+      if (c === "perfil"){ const s2 = document.createElement("span"); s2.className = "chip" + (f.pc ? " p" + f.pc : ""); s2.textContent = f.perfil; td.append(s2); }
+      else if (typeof f[c] === "number"){ td.textContent = c === "pob" ? fmt.format(f[c]) : c === "suc" ? f[c].toFixed(2).replace(".", ",") : fmt1.format(f[c]); }
+      else td.textContent = f[c];
+      tr.append(td);
+    }
+    tbody.append(tr);
+  }
+}
+tabla();
+</script>
+</body>
+</html>

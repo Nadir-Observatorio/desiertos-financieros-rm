@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "desiertos-financieros-chile"
+version = "0.0.0"
+description = "Acceso físico a servicios financieros en Chile: desiertos, perfiles y localización de puntos nuevos sobre grilla H3."
+authors = [{ name = "Camilo López Barra" }]
+license = { text = "MIT" }
+requires-python = ">=3.12"
+dependencies = [
+  "geopandas>=1.0",
+  "pandas>=2.2",
+  "pyarrow>=15",
+  "shapely>=2.0",
+  "h3>=4.1",
+  "osmium>=4.0",
+  "scipy>=1.11",
+  "r5py>=1.1",
+  "esda>=2.5",
+  "libpysal>=4.10",
+  "scikit-learn>=1.5",
+  "spreg>=1.8",
+  "mgwr>=2.2",
+  "openpyxl>=3.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.5", "mypy>=1.10", "pandas-stubs>=2.2"]
+
+[project.scripts]
+desiertos = "desiertos.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+desiertos = ["plantillas/*.html", "plantillas/vendor/*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "N", "SIM", "RUF"]
+# Los nombres en español ponen "Error" al inicio (ErrorDatos), no al final.
+ignore = ["N818"]
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+mypy_path = "src"
+
+[[tool.mypy.overrides]]
+module = ["geopandas.*", "h3.*", "shapely.*", "pyarrow.*", "pyogrio.*", "osmium.*", "r5py.*", "scipy.*", "esda.*", "libpysal.*", "sklearn.*", "spreg.*", "mgwr.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
