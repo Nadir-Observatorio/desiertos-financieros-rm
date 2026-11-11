@@ -46,12 +46,17 @@ CODIGO_LISA = {"alto_alto": 1, "bajo_bajo": 2, "alto_bajo": 3, "bajo_alto": 4}
 CLASE_PERFIL = {PERIURBANA: 1, ORIENTE: 2}
 PARTICULAS = frozenset({"de", "del", "la", "las", "los", "y"})
 
-# Bibliotecas copiadas de npm (d3 7.8.5, licencia ISC; h3-js 4.1.0, licencia Apache 2.0).
+# Bibliotecas copiadas de npm (d3 7.8.5, licencia ISC; h3-js 4.1.0, licencia Apache 2.0) y la
+# tipografía Jost de la marca Nadir (@fontsource/jost, SIL Open Font License 1.1).
 VENDOR: dict[str, str] = {
     "d3.min.js": "d6b03aefc9f6c44c7bc78713679c78c295028fa914319119e5cc4b4954855b1c",
     "h3-js.umd.js": "0870d94de38503bdf6b63dce8c4812a42dc43565f15ae35694aedf4f97eaf548",
     "LICENSE-d3.txt": "3e6849627f74ff73c257a3ae1efb574015d94fc1035c05ec3c15805165efcbc4",
     "LICENSE-h3-js.txt": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+    "jost-400.woff2": "f94cffda16515fbb1667a2662d6b46f5610a942fd02fe88d67ff98f776288962",
+    "jost-500.woff2": "98dce4f076fe71a123a7cd44470e6f05e969cb6d7c9b2717766ad103e3597297",
+    "jost-600.woff2": "d0487d684596edca7f495d2495ee77a55448740930023c305e8a683b1daefda2",
+    "LICENSE-jost.txt": "536533cad95838e13777663c4109b802aa662ef1ef285337f0c7f51d35682fdc",
 }
 
 ARCHIVOS_ENTRADA = (
@@ -73,6 +78,7 @@ class Resumen(TypedDict):
     pct: float
     rural: float
     urbano: float
+    des_rural: float
     umbral_min: float
     tope_min: int
     min_personas: int
@@ -407,6 +413,9 @@ def resumen_estudio(
 
     es_rural = celdas["rural"].astype(bool)
     rural = proporcion(es_rural) * 100
+    des_rural = (
+        float(celdas.loc[es_rural & desierto, "n_per"].sum()) / des * 100 if des > 0 else 0.0
+    )
     urbano = proporcion(~es_rural) * 100
 
     clave = "a_pie_r9"
@@ -438,6 +447,7 @@ def resumen_estudio(
         "pct": round(des / total * 100, 1),
         "rural": round(rural, 1),
         "urbano": round(urbano, 1),
+        "des_rural": round(des_rural, 1),
         "umbral_min": umbral,
         "tope_min": tope,
         "min_personas": MIN_PERSONAS,

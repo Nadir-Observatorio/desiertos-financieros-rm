@@ -1,4 +1,4 @@
-# Desiertos financieros de Chile
+# Desiertos financieros de la Región Metropolitana
 
 Línea de exclusión financiera de [Nadir](https://nadir-observatorio.github.io/), observatorio de
 riesgo y exposición. Caso 1: Región Metropolitana.
@@ -7,7 +7,7 @@ riesgo y exposición. Caso 1: Región Metropolitana.
 arreglaría con puntos nuevos bien ubicados? Estudio de la Región Metropolitana con datos públicos,
 protocolo sellado antes de cruzar los datos y código reproducible.
 
-**[Ver el visor](https://nadir-observatorio.github.io/desiertos-financieros-chile/visor/)**
+**[Ver el visor](https://nadir-observatorio.github.io/desiertos-financieros-rm/visor/)**
 
 Hecho por Camilo López Barra, geógrafo (Universidad de Concepción).
 

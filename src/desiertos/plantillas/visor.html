@@ -4,15 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Desiertos financieros de la Región Metropolitana</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+@font-face{font-family:"Jost";font-style:normal;font-weight:400;font-display:swap;src:url("vendor/jost-400.woff2") format("woff2")}
+@font-face{font-family:"Jost";font-style:normal;font-weight:500;font-display:swap;src:url("vendor/jost-500.woff2") format("woff2")}
+@font-face{font-family:"Jost";font-style:normal;font-weight:600;font-display:swap;src:url("vendor/jost-600.woff2") format("woff2")}
 /* Layout: cabecera con cifras, mapa de celdas con capas, curva de cobertura y tabla comunal. */
 :root{
   --fondo:#f4f5f2; --papel:#ffffff; --tinta:#1d2421; --suave:#5d6a64; --linea:#d9ddd8;
   --acento:#0f6b5c; --alerta:#b4442c;
-  --f-titulo:"Newsreader", Georgia, "Times New Roman", serif;
-  --f-texto:"Public Sans", "Segoe UI", system-ui, sans-serif;
+  --f-titulo:"Jost", "Segoe UI", system-ui, sans-serif;
+  --f-texto:"Jost", "Segoe UI", system-ui, sans-serif;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
@@ -30,6 +31,7 @@ h1{font-size:clamp(26px,3.4vw,38px);line-height:1.15}
 h2{font-size:22px}
 .bajada{color:var(--suave);max-width:70ch;margin:6px 0 0}
 .etiqueta{display:inline-block;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--acento);font-weight:600}
+.etiqueta a{color:inherit;text-decoration:none;border-bottom:1px solid currentColor}
 .cifras{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
 .cifra{background:var(--papel);border:1px solid var(--linea);border-radius:8px;padding:14px 16px}
 .cifra b{display:block;font-family:var(--f-titulo);font-size:30px;font-variant-numeric:tabular-nums;line-height:1.1}
@@ -44,6 +46,9 @@ h2{font-size:22px}
 #lienzo-caja{position:relative;width:100%;aspect-ratio:1/1;max-height:640px;border:1px solid var(--linea);border-radius:6px;overflow:hidden;background:var(--fondo);touch-action:none}
 #lienzo{width:100%;height:100%;display:block;cursor:grab}
 #tip{position:absolute;pointer-events:none;background:var(--papel);border:1px solid var(--linea);border-radius:6px;padding:8px 10px;font-size:13px;max-width:240px;box-shadow:0 4px 14px rgba(0,0,0,.15);display:none}
+.sintesis{margin:18px 0 22px;max-width:78ch}
+.sintesis h2{font-size:15px;margin:0 0 6px}
+.sintesis p{margin:0;line-height:1.55}
 .leyenda{display:grid;gap:4px;font-size:13px;margin-top:8px}
 .leyenda div{display:flex;align-items:center;gap:8px}
 .leyenda i{width:16px;height:12px;border-radius:2px;display:inline-block;border:1px solid var(--linea)}
@@ -75,7 +80,7 @@ th button{font:inherit;font-weight:600;background:none;border:0;color:var(--tint
 <body>
 <div class="envoltura">
   <header>
-    <span class="etiqueta">Estudio con protocolo sellado · Censo 2024 · noviembre 2026</span>
+    <span class="etiqueta"><a href="https://nadir-observatorio.github.io/">Nadir</a> · Exclusión financiera</span>
     <h1>Desiertos financieros de la Región Metropolitana</h1>
     <p class="bajada">Tiempo a pie desde cada celda hexagonal poblada hasta el punto de acceso financiero físico más cercano: sucursal, cajero, Caja Vecina o BancoEstado Express. Una celda es desierto si el punto más cercano está a más de <span class="umbral"></span> minutos caminando a 3,6 km/h.</p>
   </header>
@@ -85,6 +90,11 @@ th button{font:inherit;font-weight:600;background:none;border:0;color:var(--tint
     <div class="cifra"><b id="c-des"></b><span>personas a más de <span class="umbral"></span> minutos a pie</span></div>
     <div class="cifra"><b id="c-rur"></b><span>de la población rural en desierto, frente a <span id="c-urb"></span> urbana</span></div>
     <div class="cifra"><b id="c-100"></b><span>quedaría en desierto con 100 puntos nuevos bien ubicados</span></div>
+  </section>
+
+  <section class="sintesis" aria-labelledby="t-sintesis">
+    <h2 id="t-sintesis">En síntesis</h2>
+    <p id="sintesis"></p>
   </section>
 
   <section class="panel" aria-labelledby="t-mapa">
@@ -137,8 +147,8 @@ th button{font:inherit;font-weight:600;background:none;border:0;color:var(--tint
   </section>
 </div>
 
-<script src="vendor/d3.min.js"></script>
-<script src="vendor/h3-js.umd.js"></script>
+<script src="vendor/d3.min.js" integrity="sha384-su5kReKyYlIFrI62mbQRKXHzFobMa7BHp1cK6julLPbnYcCW9NIZKJiTODjLPeDh"></script>
+<script src="vendor/h3-js.umd.js" integrity="sha384-nKUDlg+fT0U/eEt4KWP9n034kLe/eVj6k7CVjbu6qfRhJdEyinlGajS9+9AU+UZ5"></script>
 <script>
 const DATOS = __DATOS__;
 const fmt = new Intl.NumberFormat("es-CL");
@@ -159,6 +169,16 @@ document.getElementById("h2").textContent = R.h2[0].toFixed(2).replace(".", ",")
 document.getElementById("h2ic").textContent = R.h2[1].toFixed(2).replace(".", ",") + " a " + R.h2[2].toFixed(2).replace(".", ",");
 document.getElementById("h3").textContent = R.h3.toFixed(3).replace(".", ",");
 for (const el of document.querySelectorAll(".umbral")) el.textContent = fmt.format(R.umbral_min);
+{
+  const c100 = DATOS.curva.find(c => c[0] === 100);
+  const baja = (1 - c100[2] / R.pct) * 100;
+  const urbanoDes = 100 - R.des_rural;
+  document.getElementById("sintesis").textContent =
+    `Vivir en el campo multiplica el riesgo: ${fmt1.format(R.rural)} % de la población rural está en desierto, frente a ${fmt1.format(R.urbano)} % de la urbana. ` +
+    `${urbanoDes > 50 ? "Pero la mayoría de quienes viven en desierto está en la ciudad" : "Y la mayoría de quienes viven en desierto está en el campo"}: de las ${fmt.format(R.des)} personas en desierto, ${fmt1.format(urbanoDes)} % vive en celdas urbanas. ` +
+    `Ser mayor de 60 años no aumenta la exposición: están ${R.h2[0] < 1 ? "menos" : "más"} representados en los desiertos que en el resto (razón ${fmt.format(R.h2[0])}). ` +
+    `Y el problema tiene arreglo: con 100 puntos nuevos bien ubicados, la población en desierto bajaría de ${fmt1.format(R.pct)} % a ${fmt1.format(c100[2])} %, ${baja >= 0 ? "un" : ""} ${fmt.format(Math.round(baja))} % menos.`;
+}
 for (const el of document.querySelectorAll(".minimo")) el.textContent = fmt.format(R.min_personas);
 document.getElementById("tope").textContent = fmt.format(R.tope_min);
 document.getElementById("replicas").textContent = fmt.format(R.replicas);
@@ -203,7 +223,7 @@ function dibujarLineas(){
 function dibujarRotulos(){
   const ocupado = [];
   ctx.save();
-  ctx.font = "600 11.5px Inter, system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.font = "500 12px Jost, system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
   ctx.lineJoin = "round"; ctx.lineWidth = 3.5;
   ctx.strokeStyle = css("--papel"); ctx.fillStyle = css("--tinta");
   for (const r of rotulos){

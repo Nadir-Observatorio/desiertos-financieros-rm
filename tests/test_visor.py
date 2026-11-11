@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import hashlib
 import json
 from pathlib import Path
@@ -267,6 +268,7 @@ def test_construir_datos_lee_todo_de_los_derivados(tmp_path: Path) -> None:
     datos = construir_datos(_banco(tmp_path), UMBRAL, _referencias())
     r = datos["resumen"]
     assert r["rural"] == 100.0
+    assert r["des_rural"] == pytest.approx(102 / 511 * 100, abs=0.05)
     assert r["sostiene"] == {"H1": True, "H2": False, "H3": True}
     assert r["p_holm"]["H3"] == 0.002
     assert r["replicas"] == 2000 and r["tope_min"] == 120 and r["min_personas"] == MIN_PERSONAS
@@ -296,8 +298,12 @@ def test_escribir_visor_es_determinista_y_sin_cdn(tmp_path: Path) -> None:
     assert set(a) == {"index.html", "datos.json", *(f"vendor/{n}" for n in VENDOR)}
     html = (tmp_path / "a" / "index.html").read_text(encoding="utf-8")
     assert MARCA not in html
-    assert "cdnjs" not in html and "jsdelivr" not in html
+    assert "cdnjs" not in html and "jsdelivr" not in html and "googleapis" not in html
     assert 'src="vendor/d3.min.js"' in html and 'src="vendor/h3-js.umd.js"' in html
+    for nombre in ("d3.min.js", "h3-js.umd.js"):
+        cuerpo = (tmp_path / "a" / "vendor" / nombre).read_bytes()
+        sri = "sha384-" + base64.b64encode(hashlib.sha384(cuerpo).digest()).decode()
+        assert f'src="vendor/{nombre}" integrity="{sri}"' in html
     for nombre, huella in VENDOR.items():
         cuerpo = (tmp_path / "a" / "vendor" / nombre).read_bytes()
         assert hashlib.sha256(cuerpo).hexdigest() == huella
