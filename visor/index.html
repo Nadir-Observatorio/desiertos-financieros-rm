@@ -25,7 +25,7 @@
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--fondo);color:var(--tinta);font:15px/1.5 var(--f-texto)}
-.envoltura{max-width:1240px;margin:0 auto;padding:24px 20px 48px;display:grid;gap:22px}
+.envoltura{max-width:1240px;margin:0 auto;padding:24px 20px 48px;display:grid;grid-template-columns:minmax(0,1fr);gap:22px}
 h1,h2{font-family:var(--f-titulo);font-weight:600;text-wrap:balance;margin:0}
 h1{font-size:clamp(26px,3.4vw,38px);line-height:1.15}
 h2{font-size:22px}
@@ -61,6 +61,7 @@ label{font-size:13px;color:var(--suave)}
 select{font:inherit;font-size:14px;padding:4px 8px;border:1px solid var(--linea);border-radius:6px;background:var(--fondo);color:var(--tinta)}
 #curva{width:100%;height:auto;display:block}
 .tabla-caja{overflow-x:auto}
+.tabla-caja:focus-visible{outline:2px solid var(--acento);outline-offset:2px}
 table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
 th,td{padding:6px 8px;border-bottom:1px solid var(--linea);text-align:right;white-space:nowrap}
 th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
@@ -109,7 +110,7 @@ th button{font:inherit;font-weight:600;background:none;border:0;color:var(--tint
         </div>
         <label class="ref"><input type="checkbox" id="ref" checked> Nombres de comunas, ríos y autopistas</label>
         <div id="lienzo-caja"><canvas id="lienzo" aria-label="Mapa de celdas hexagonales de la Región Metropolitana"></canvas><div id="tip" role="status"></div></div>
-        <p style="font-size:12px;color:var(--suave);margin:6px 0 0">Arrastra para mover y usa la rueda o dos dedos para acercar. Sin límites comunales dibujados: cada nombre va en el centro poblado de su comuna. Ríos y autopistas: © colaboradores de OpenStreetMap. Celdas H3 de resolución 9 con <span class="minimo"></span> o más personas; las de menos se agregan a resolución 6 (hexágonos grandes) y se ocultan si el agregado no llega a <span class="minimo"></span>.</p>
+        <p style="font-size:12px;color:var(--suave);margin:6px 0 0">Arrastra para mover y usa la rueda o dos dedos para acercar. Sin mouse ni pantalla táctil, las mismas cifras por comuna están en la tabla Comunas. Sin límites comunales dibujados: cada nombre va en el centro poblado de su comuna. Ríos y autopistas: © colaboradores de OpenStreetMap. Celdas H3 de resolución 9 con <span class="minimo"></span> o más personas; las de menos se agregan a resolución 6 (hexágonos grandes) y se ocultan si el agregado no llega a <span class="minimo"></span>.</p>
       </div>
       <div class="lateral">
         <div id="leyenda" class="leyenda" aria-live="polite"></div>
@@ -135,7 +136,7 @@ th button{font:inherit;font-weight:600;background:none;border:0;color:var(--tint
   <section class="panel" aria-labelledby="t-com">
     <h2 id="t-com">Comunas</h2>
     <p class="bajada" style="margin-bottom:10px">Desierto y tiempo agregados desde las celdas. Sucursales y cajeros por 10.000 habitantes según la CMF (agosto 2026); pobreza por ingresos y multidimensional según las estimaciones SAE 2024 del Ministerio de Desarrollo Social. Las cifras comunales no se atribuyen a celdas.</p>
-    <div class="tabla-caja"><table id="tabla"><thead><tr></tr></thead><tbody></tbody></table></div>
+    <div class="tabla-caja" tabindex="0" role="region" aria-labelledby="t-com"><table id="tabla"><thead><tr></tr></thead><tbody></tbody></table></div>
   </section>
 
   <section class="notas" aria-labelledby="t-notas">
@@ -353,7 +354,7 @@ function textoK(){
   const p = document.getElementById("texto-k");
   if (!kSel){ p.textContent = `Elige un escenario para ver dónde rinde más un punto nuevo: el modelo de cobertura máxima maximiza la población que queda a ${U} minutos o menos.`; return; }
   const c = DATOS.curva.find(x => x[0] === kSel);
-  p.textContent = `Con ${kSel} puntos nuevos quedan cubiertas ${fmt.format(c[1])} personas y la población regional en desierto baja de ${fmt1.format(R.pct)} % a ${fmt1.format(c[2])} %. Ubicación aproximada, al hexágono de resolución 8.`;
+  p.textContent = `Con ${kSel} puntos nuevos quedan cubiertas ${fmt.format(c[1])} personas y la población regional en desierto baja de ${fmt1.format(R.pct)} % a ${fmt1.format(c[2])} %. Ubicación aproximada, al hexágono de resolución 8. Es un escenario de modelo, no una propuesta de ubicación.`;
 }
 sel.addEventListener("change", () => { kSel = +sel.value; textoK(); dibujar(); curva(); });
 textoK();
